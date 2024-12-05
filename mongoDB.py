@@ -12,7 +12,7 @@ from pymongo.errors import *
 from datetime import datetime
 #mongodb+srv://BOTCHK:BOTCHK@cluster0.mltqm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
 #mongodb://127.0.0.1:27017
-MONGO_URI = 'mongodb://127.0.0.1:27017'
+MONGO_URI = 'mongodb+srv://BOTCHK:BOTCHK@cluster0.mltqm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 database = client['botchk']
 collection = database['usuarios']
