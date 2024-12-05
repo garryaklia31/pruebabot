@@ -1,0 +1,65 @@
+from all.configs._def_main_ import *
+
+@bot.on_message(filters.command("addg", prefixes=["/"]) & filters.user(AUTHORIZED_USERS))
+async def add_group_premium(client, message):
+    try:
+        # Obtener argumentos del comando
+        command_args = message.text.split()[1:]
+        if len(command_args) < 1:
+            await message.reply("""<b>
+━━━━━━━━「ELAINA」━━━━━━━━
+<i>Command</i> ⇨ <code>$seller addgp</code>
+<i>Usage</i> ⇨ <code>$seller addgp days|reason</code>
+━━━━━━━━「ELAINA」━━━━━━━━
+</b>""", quote=True)
+            return
+
+        # Procesar argumentos
+        duration_reason = " ".join(command_args)
+        duration_reason = duration_reason.split("|")
+        
+        days = duration_reason[0]
+        reason = duration_reason[1] if len(duration_reason) > 1 else "No reason provided"
+        
+        if not days.isdigit():
+            await message.reply("<b>Invalid number of days❗</b>", quote=True)
+            return
+
+        # Calcular fecha de expiración
+        expiration_date = datetime.now() + timedelta(days=int(days))
+
+        # Verificar si el grupo ya es premium
+        group_data = collection_tres.find_one({"group": str(message.chat.id)})
+        if group_data:
+            await message.reply("<b>This group already has a premium membership❗</b>", quote=True)
+            return
+
+        # Insertar nuevo grupo premium
+        user = message.from_user
+        new_premium_group = {
+            "group": str(message.chat.id),
+            "days": int(days),
+            "key": expiration_date,
+            "promote": user.username or "Unknown",
+            "rango": permisos.get("role", "User"),
+            "type": "Premium Group",
+            "reason": reason,
+        }
+        collection_tres.insert_one(new_premium_group)
+
+        # Mensaje de confirmación
+        confirmation_message = f"""<b>━━━━━━━━「ELAINA」━━━━━━━━
+<i>Elaina</i> ⇨ <code>Administration! </code>👁
+━━━━━━━━「Add Group」━━━━━━━━
+<i>Group ID</i> ⇨ <code>{message.chat.id}</code>
+<i>Plan</i> ⇨ <i><u>Premium Group</u></i>
+<i>Days</i> ⇨ <code>{days}</code>
+<i>Reason</i> ⇨ <i>{reason}</i>
+━━━━━━━━「ELAINA」━━━━━━━━
+<i>Promoted By</i> ⇨ <a href="tg://user?id={user.id}">{user.first_name}</a> [<code>{permisos.get('role', 'User')}</code>]</b>"""
+        await message.reply(confirmation_message, quote=True)
+
+        # Enviar registro al chat de logs
+        await client.send_message(LOG_CHAT_ID, confirmation_message)
+    except Exception as e:
+        await message.reply(f"<b>Error:</b> {str(e)}", quote=True)
