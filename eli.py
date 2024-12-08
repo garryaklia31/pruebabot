@@ -12,7 +12,7 @@ from all.proxis.array_proxies import proxies as array_proxies
 logging.basicConfig(level=logging.INFO)
 
 # Obtener el ID del chat de logs desde las variables de entorno
-LOG_CHAT_ID = int(os.getenv("LOG_CHAT_ID", "-1002416011069"))  # Por defecto, usa un valor fijo
+LOG_CHAT_ID = int(os.getenv("LOG_CHAT_ID"))  # Por defecto, usa un valor fijo
 
 # Función para verificar proxies
 async def check_proxy(proxy):
