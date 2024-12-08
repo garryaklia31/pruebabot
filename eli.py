@@ -1,29 +1,18 @@
 from pyrogram import Client
 import os
 import logging
-from aiohttp import web
 from mongoDB import *
 import asyncio
 from datetime import datetime
+from pyrogram.errors import RPCError, BadRequest
+import aiohttp
 from all.proxis.array_proxies import proxies as array_proxies
 
+# Configurar logging
 logging.basicConfig(level=logging.INFO)
 
-LOG_CHAT_ID = -1002416011069
-
-# Servidor HTTP para Render
-async def handle(request):
-    return web.Response(text="Bot de Telegram está en ejecución")
-
-async def start_http_server():
-    port = int(os.environ.get("PORT", 8080))
-    app = web.Application()
-    app.router.add_get("/", handle)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    await site.start()
-    logging.info(f"Servidor HTTP ejecutándose en el puerto {port}")
+# Obtener el ID del chat de logs desde las variables de entorno
+LOG_CHAT_ID = int(os.getenv("LOG_CHAT_ID", "-1002416011069"))  # Por defecto, usa un valor fijo
 
 # Función para verificar proxies
 async def check_proxy(proxy):
@@ -37,11 +26,17 @@ async def check_proxy(proxy):
                     else:
                         return "Proxy live ✅", proxy
         return None
+    except aiohttp.ClientResponseError as e:
+        if e.status == 402:
+            return "Proxy de pago requerido 🔒", proxy
+        else:
+            print(f"Error durante la verificación del proxy: {e}")
+            return None
     except Exception as e:
-        logging.error(f"Error durante la verificación del proxy: {e}")
+        print(f"Error durante la verificación del proxy: {e}")
         return None
 
-# Verificar múltiples proxies
+# Función para verificar múltiples proxies
 async def check_proxies():
     results = []
     for proxy in array_proxies:
@@ -55,7 +50,7 @@ async def periodic_proxy_check():
     while True:
         results = await check_proxies()
         for result in results:
-            logging.info(result)
+            print(result)
 
         with open('all/proxis/array_proxies.py', 'r') as file:
             lines = file.readlines()
@@ -66,14 +61,14 @@ async def periodic_proxy_check():
         for line in lines:
             proxy_line = line.strip()
             if any(proxy in proxy_line for proxy in paid_proxies):
-                logging.info(f"Proxy de pago encontrado y eliminado: {line.strip()}")
+                print(f"Proxy de pago encontrado y eliminado: {line.strip()}")
             else:
                 filtered_lines.append(line)
 
         with open('all/proxis/array_proxies.py', 'w') as file:
             file.writelines(filtered_lines)
 
-        logging.info("Se han eliminado las proxies de pago del archivo array_proxies.py.")
+        print("Se han eliminado las proxies de pago del archivo array_proxies.py.")
         await asyncio.sleep(600)
 
 # Tarea periódica para renovar membresías
@@ -84,11 +79,11 @@ async def periodic_renewal(bot):
             if usuario["key"] != "None":
                 if usuario["key"] < datetime.now():
                     collection.update_one({"_id": usuario["_id"]}, {
-                        "$set": {"key": "None", "plan": "Free User", "antispam": 60, "apodo": "Free User"}})
+                        "$set": {"key": "None", "plan": "Free User", "antispam": 60, "apodo": "Free User",}})
                     chat_id = usuario["_id"]
-                    mensaje = f"""<b><i>Hello user with the id <code>{chat_id}</code> your premium membership has expired, contact a seller to purchase a new one.</i></b>"""
-                    mensaje_admin = f"""<b><i>El usuario con el id <code>{chat_id}</code> dejó de ser premium, revisar si está en grupo de usuarios premium pagados</i></b>"""
-                    mensaje_admin2 = f"""<b><i>El usuario con el id <code>{chat_id}</code> dejó de ser premium, pero no pudo recibir el mensaje!</i></b>"""
+                    mensaje = f"""<b><i>Hello user with the id <code>{chat_id}</code>, your premium membership has expired. Contact a seller to purchase a new one.</i></b>"""
+                    mensaje_admin = f"""<b><i>The user with id <code>{chat_id}</code> is no longer premium. Check if they are in the paid premium user group.</i></b>"""
+                    mensaje_admin2 = f"""<b><i>The user with id <code>{chat_id}</code> is no longer premium but could not receive the message!</i></b>"""
                     try:
                         await bot.send_message(chat_id, mensaje)
                         await bot.send_message(LOG_CHAT_ID, mensaje_admin)
@@ -96,7 +91,7 @@ async def periodic_renewal(bot):
                         await bot.send_message(LOG_CHAT_ID, mensaje_admin2)
                         pass
 
-# Tarea periódica para restablecer alertas y tareas
+# Tarea periódica para restablecer contadores
 async def resetallcmd():
     while True:
         collection.update_many({"alerts": {"$exists": True}}, {"$set": {"alerts": 0}})
@@ -105,17 +100,17 @@ async def resetallcmd():
 
 # Función principal
 async def main():
+    # Leer configuración desde las variables de entorno
     bot = Client(
         'Chkbot',
-        api_id=29114806,
-        api_hash="8a26d0ca9df972e7d5ad165e8e0745f8",
-        bot_token="7727039084:AAGcxYDuVbj0tzdAhd9JBa7GXsx9U96j3qE",
+        api_id=int(os.getenv("API_ID")),
+        api_hash=os.getenv("API_HASH"),
+        bot_token=os.getenv("BOT_TOKEN"),
         plugins=dict(root="all")
     )
-    os.system('cls')
+    os.system('cls' if os.name == 'nt' else 'clear')
     await bot.start()
     await asyncio.gather(
-        start_http_server(),  # Inicia el servidor HTTP
         periodic_proxy_check(),
         periodic_renewal(bot),
         resetallcmd(),
@@ -123,5 +118,5 @@ async def main():
     )
 
 if __name__ == "__main__":
-    os.system('clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
     asyncio.run(main())
