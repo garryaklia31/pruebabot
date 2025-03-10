@@ -11,7 +11,7 @@ from pyrogram.types import (
 from pymongo.errors import *
 from datetime import datetime
 
-MONGO_URI = 'mongodb+srv://garry:MEHAKPREET@garry.mn2ay.mongodb.net/?retryWrites=true&w=majority&appName=Garry'
+MONGO_URI = 'mongodb+srv://officialhatrick:GARRYSIDHU@cluster0.dskcl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 database = client['Elaina']
 collection = database['usuarios']
 collection_dos = database['keys']
