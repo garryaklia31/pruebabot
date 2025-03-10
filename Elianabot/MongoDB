@@ -13,7 +13,7 @@ from pyrogram.types import (
 from datetime import datetime
 
 # Define la URI de conexión
-MONGO_URI = 'mongodb+srv://garry:MEHAKPREET@garry.mn2ay.mongodb.net/?retryWrites=true&w=majority&appName=Garry'
+MONGO_URI = 'mongodb+srv://officialhatrick:GARRYSIDHU@cluster0.dskcl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 
 # Crea el cliente de conexión
 client = MongoClient(MONGO_URI)
