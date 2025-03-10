@@ -13,8 +13,8 @@ from datetime import datetime
 
 
 # Cargar las variables de entorno
-MONGO_URI = os.getenv("MONGO_URI")  # Sin valor por defecto
-LOG_CHAT_ID = os.getenv("LOG_CHAT_ID")  # Sin valor por defecto
+MONGO_URI = "mongodb+srv://officialhatrick:GARRYSIDHU@cluster0.dskcl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"  # Sin valor por defecto
+LOG_CHAT_ID = "-1002228014836"  # Sin valor por defecto
 
 # Verificar que las variables de entorno existan
 
