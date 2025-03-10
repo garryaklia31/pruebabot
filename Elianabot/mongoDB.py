@@ -6,7 +6,7 @@ from pymongo.errors import *
 from datetime import datetime
 
 # Conectar a MongoDB Atlas con la URI proporcionada
-MONGO_URI = 'mongodb+srv://garry:MEHAKPREET@garry.mn2ay.mongodb.net/?retryWrites=true&w=majority&appName=Garry'
+MONGO_URI = 'mongodb+srv://officialhatrick:GARRYSIDHU@cluster0.dskcl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 client = pymongo.MongoClient(MONGO_URI)  # Crear la conexión al cliente MongoDB
 
 # Seleccionar la base de datos y las colecciones
